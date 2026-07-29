@@ -1,14 +1,5 @@
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-
-const navItems = [
-  { href: "/", label: "DCM Home" },
-  { href: "/tournaments", label: "Tournament Pages" },
-  { href: "/players", label: "Player Pages" },
-  { href: "/organizer", label: "Organizer" }
-];
-
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(8,10,18,0.88)] backdrop-blur-xl">
@@ -22,17 +13,7 @@ export function SiteHeader() {
             <p className="text-xs text-[var(--color-mist)]">Knockout scheduler, draw board, and result cards</p>
           </div>
         </Link>
-        <nav className="hidden items-center gap-5 md:flex">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="text-sm text-[var(--color-mist)] transition hover:text-white">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
         <div className="flex items-center gap-3">
-          <Badge className="border border-white/10 bg-[linear-gradient(135deg,rgba(45,127,120,0.22),rgba(79,51,95,0.16))] text-[var(--color-cream)]">
-            Local DCM Tool
-          </Badge>
           <Link
             href="/"
             className="rounded-full bg-[var(--color-gold)] px-4 py-2 text-sm font-semibold text-[var(--color-ink)] shadow-[0_12px_26px_rgba(217,164,65,0.18)] transition hover:bg-[var(--color-gold-soft)]"

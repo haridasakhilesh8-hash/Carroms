@@ -38,18 +38,24 @@ type KnockoutRound = {
 
 const STORAGE_KEY = "dcm-carrom-player-bank";
 const starterNames = [
-  "Ram",
-  "Ravi",
-  "Kiran",
-  "Siva",
-  "Venu",
-  "Pavan",
-  "Mohan",
-  "Arun"
+  "Akhil",
+  "Vivendra",
+  "Sai",
+  "Dinesh",
+  "Mahesh",
+  "Devika",
+  "Sneha",
+  "Arshad",
+  "Ajay",
+  "Faisal"
 ];
 
 function normalizeName(name: string) {
   return name.trim().replace(/\s+/g, " ");
+}
+
+function mergeWithStarterNames(names: string[]) {
+  return Array.from(new Set([...starterNames, ...names]));
 }
 
 function shuffleNames(values: string[]) {
@@ -284,8 +290,9 @@ export function DcmTournamentPlanner() {
       const parsed = JSON.parse(stored) as string[];
 
       if (Array.isArray(parsed) && parsed.length) {
-        setPlayerBank(parsed);
-        setSelectedNames(parsed);
+        const mergedNames = mergeWithStarterNames(parsed);
+        setPlayerBank(mergedNames);
+        setSelectedNames(mergedNames);
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
@@ -293,7 +300,7 @@ export function DcmTournamentPlanner() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(playerBank));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mergeWithStarterNames(playerBank)));
   }, [playerBank]);
 
   const resultOptions = useMemo(() => {
@@ -384,7 +391,7 @@ export function DcmTournamentPlanner() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(starterNames));
   }
 
-  function downloadCelebrationCard(cardType: "winner" | "runner-up") {
+  async function downloadCelebrationCard(cardType: "winner" | "runner-up") {
     const subject = cardType === "winner" ? winner : runnerUp;
 
     if (!subject) {
@@ -392,9 +399,9 @@ export function DcmTournamentPlanner() {
     }
 
     const title = cardType === "winner" ? "Champion" : "Runner-up";
-    const accentA = cardType === "winner" ? "#d9a441" : "#49b4ab";
-    const accentB = cardType === "winner" ? "#c86b44" : "#6a4fdb";
-    const accentC = cardType === "winner" ? "#fff2d2" : "#f0f6ff";
+    const accentA = cardType === "winner" ? "#d9a441" : "#c7cedd";
+    const accentB = cardType === "winner" ? "#c86b44" : "#8f7348";
+    const accentC = cardType === "winner" ? "#fff2d2" : "#f5f7fb";
     const tournamentLabel = tournamentName || "DCM Carrom Tournament";
     const modeLabel = tournamentMode === "singles" ? "Singles" : "Doubles";
     const formatLabel = scoringMode === "best-of-3" ? "Best of 3" : "29 points";
@@ -402,9 +409,16 @@ export function DcmTournamentPlanner() {
     const safeTournament = escapeSvgText(tournamentLabel);
     const safeTitle = escapeSvgText(title);
     const safeMeta = escapeSvgText(`${modeLabel} | ${formatLabel}`);
+    const safeHeadline = escapeSvgText(
+      cardType === "winner" ? "Night of Champions" : "A Brilliant Finish"
+    );
+    const safeStamp = escapeSvgText(cardType === "winner" ? "No. 1 Finish" : "Grand Finalist");
+    const safeFooter = escapeSvgText(
+      cardType === "winner" ? "Celebration Poster" : "Finalist Celebration"
+    );
 
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
         <defs>
           <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#121725" />
@@ -423,45 +437,83 @@ export function DcmTournamentPlanner() {
             <stop offset="0%" stop-color="rgba(255,255,255,0.18)" />
             <stop offset="100%" stop-color="rgba(255,255,255,0.06)" />
           </linearGradient>
+          <linearGradient id="banner" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="${accentA}" />
+            <stop offset="100%" stop-color="${accentB}" />
+          </linearGradient>
         </defs>
-        <rect width="1600" height="900" fill="url(#bg)" />
-        <rect width="1600" height="900" fill="url(#glowA)" />
-        <rect width="1600" height="900" fill="url(#glowB)" />
-        <g opacity="0.18">
-          <circle cx="180" cy="125" r="10" fill="${accentA}" />
-          <circle cx="250" cy="180" r="7" fill="${accentC}" />
-          <circle cx="1360" cy="160" r="8" fill="${accentA}" />
-          <circle cx="1440" cy="220" r="12" fill="${accentC}" />
-          <circle cx="1320" cy="710" r="9" fill="${accentA}" />
-          <circle cx="240" cy="760" r="8" fill="${accentC}" />
+        <rect width="1080" height="1350" fill="url(#bg)" />
+        <rect width="1080" height="1350" fill="url(#glowA)" />
+        <rect width="1080" height="1350" fill="url(#glowB)" />
+        <g opacity="0.2">
+          <circle cx="140" cy="150" r="10" fill="${accentA}" />
+          <circle cx="230" cy="210" r="8" fill="${accentC}" />
+          <circle cx="915" cy="190" r="12" fill="${accentA}" />
+          <circle cx="980" cy="255" r="9" fill="${accentC}" />
+          <circle cx="890" cy="1120" r="12" fill="${accentB}" />
+          <circle cx="220" cy="1160" r="10" fill="${accentC}" />
         </g>
-        <rect x="95" y="85" width="1410" height="730" rx="42" fill="rgba(10,18,24,0.48)" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
-        <rect x="130" y="120" width="1340" height="80" rx="22" fill="rgba(255,255,255,0.05)" />
-        <text x="160" y="171" fill="${accentA}" font-size="30" font-family="Outfit, Arial, sans-serif" font-weight="700" letter-spacing="10">DCM CARROMS CELEBRATION CARD</text>
-        <text x="130" y="335" fill="${accentC}" font-size="72" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">${safeTitle}</text>
-        <text x="130" y="470" fill="#ffffff" font-size="108" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">${safeSubject}</text>
-        <text x="130" y="560" fill="rgba(255,255,255,0.84)" font-size="42" font-family="Outfit, Arial, sans-serif">${safeTournament}</text>
-        <rect x="130" y="615" width="330" height="76" rx="22" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" />
-        <text x="165" y="663" fill="${accentC}" font-size="30" font-family="Outfit, Arial, sans-serif" font-weight="600">${safeMeta}</text>
-        <g transform="translate(1090 280)">
-          <circle cx="110" cy="110" r="110" fill="rgba(255,255,255,0.06)" />
-          <circle cx="110" cy="110" r="88" fill="rgba(255,255,255,0.1)" stroke="${accentA}" stroke-width="8" />
-          <text x="110" y="108" text-anchor="middle" fill="${accentA}" font-size="26" font-family="Outfit, Arial, sans-serif" font-weight="700" letter-spacing="6">DCM</text>
-          <text x="110" y="146" text-anchor="middle" fill="${accentC}" font-size="34" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">${safeTitle}</text>
-        </g>
-        <text x="130" y="770" fill="rgba(255,255,255,0.62)" font-size="28" font-family="Outfit, Arial, sans-serif">Generated on Wednesday, July 29, 2026</text>
+        <rect x="70" y="70" width="940" height="1210" rx="44" fill="rgba(10,18,24,0.5)" stroke="rgba(255,255,255,0.14)" stroke-width="2" />
+        <rect x="110" y="110" width="300" height="64" rx="20" fill="url(#banner)" />
+        <text x="142" y="151" fill="#090c14" font-size="24" font-family="Outfit, Arial, sans-serif" font-weight="800" letter-spacing="6">DCM FINALS</text>
+        <text x="540" y="280" text-anchor="middle" fill="${accentA}" font-size="26" font-family="Outfit, Arial, sans-serif" font-weight="700" letter-spacing="8">${safeHeadline}</text>
+        <circle cx="540" cy="500" r="128" fill="rgba(255,255,255,0.05)" />
+        <circle cx="540" cy="500" r="108" fill="rgba(255,255,255,0.08)" stroke="${accentA}" stroke-width="8" />
+        <circle cx="540" cy="500" r="88" fill="rgba(10,18,24,0.4)" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+        <text x="540" y="486" text-anchor="middle" fill="${accentA}" font-size="22" font-family="Outfit, Arial, sans-serif" font-weight="700" letter-spacing="5">DCM</text>
+        <text x="540" y="530" text-anchor="middle" fill="${accentC}" font-size="32" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">${safeTitle}</text>
+        <text x="540" y="705" text-anchor="middle" fill="#ffffff" font-size="84" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">${safeSubject}</text>
+        <text x="540" y="780" text-anchor="middle" fill="rgba(255,255,255,0.84)" font-size="36" font-family="Outfit, Arial, sans-serif">${safeTournament}</text>
+        <rect x="182" y="860" width="716" height="74" rx="22" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" />
+        <text x="540" y="908" text-anchor="middle" fill="${accentC}" font-size="28" font-family="Outfit, Arial, sans-serif" font-weight="700">${safeMeta}</text>
+        <rect x="355" y="970" width="370" height="54" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" />
+        <text x="540" y="1005" text-anchor="middle" fill="${accentA}" font-size="20" font-family="Outfit, Arial, sans-serif" font-weight="700" letter-spacing="4">${safeStamp}</text>
+        <text x="540" y="1120" text-anchor="middle" fill="rgba(255,255,255,0.72)" font-size="28" font-family="Outfit, Arial, sans-serif">${safeFooter}</text>
+        <text x="540" y="1188" text-anchor="middle" fill="rgba(255,255,255,0.48)" font-size="22" font-family="Outfit, Arial, sans-serif">Generated on Wednesday, July 29, 2026</text>
       </svg>
     `.trim();
 
-    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${subject.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${cardType}-card.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const nextImage = new Image();
+        nextImage.onload = () => resolve(nextImage);
+        nextImage.onerror = () => reject(new Error("Unable to render celebration card."));
+        nextImage.src = svgUrl;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        return;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      const pngBlob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      });
+
+      if (!pngBlob) {
+        return;
+      }
+
+      const downloadUrl = URL.createObjectURL(pngBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `${subject.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${cardType}-card.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    } finally {
+      URL.revokeObjectURL(svgUrl);
+    }
   }
 
   return (
@@ -753,23 +805,90 @@ export function DcmTournamentPlanner() {
                   {knockoutRounds.length} rounds
                 </Badge>
               </div>
-              <div className="mt-5 grid gap-5 xl:grid-cols-2">
+              <div className="section-divider mt-6" />
+              <div className="mt-6 space-y-4">
                 {knockoutRounds.length ? (
                   knockoutRounds.map((round) => (
-                    <div key={round.id} className="rounded-[24px] border border-white/10 bg-[rgba(8,10,14,0.32)] p-4">
-                      <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-gold)]">{round.name}</p>
-                      <div className="mt-4 space-y-3">
-                        {round.matches.map((match) => (
-                          <div key={match.id} className="rounded-[20px] border border-white/10 bg-white/5 p-4 transition hover:bg-white/8">
-                            <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-mist)]">{match.label}</p>
-                            <p className="mt-2 text-lg font-semibold text-white">
-                              {match.sideA} <span className="text-[var(--color-gold)]">vs</span> {match.sideB}
-                            </p>
-                            {match.note ? (
-                              <p className="mt-2 text-sm text-[var(--color-sand)]">{match.note}</p>
-                            ) : null}
+                    <div
+                      key={round.id}
+                      className="overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] shadow-[0_20px_44px_rgba(3,6,16,0.2)]"
+                    >
+                      <div className="grid gap-0 xl:grid-cols-[220px_1fr]">
+                        <div className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-5 xl:border-b-0 xl:border-r">
+                          <div className="flex items-center justify-between gap-3 xl:block">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.34em] text-[var(--color-gold)]">
+                                {round.name}
+                              </p>
+                              <p className="mt-3 font-display text-2xl text-white">
+                                {round.matches.length === 1 ? "Direct clash" : "Match set"}
+                              </p>
+                            </div>
+                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-[var(--color-mist)]">
+                              {round.matches.length} match{round.matches.length > 1 ? "es" : ""}
+                            </span>
                           </div>
-                        ))}
+                          <p className="mt-4 max-w-[16rem] text-sm leading-6 text-[var(--color-mist)]">
+                            {round.matches.length === 1
+                              ? "One deciding fixture in this stage."
+                              : "Every fixture for this stage grouped in one clean board."}
+                          </p>
+                        </div>
+                        <div className="p-4 sm:p-5">
+                          <div
+                            className={`grid gap-4 ${
+                              round.matches.length === 1
+                                ? "md:max-w-[360px]"
+                                : round.matches.length === 2
+                                  ? "md:grid-cols-2"
+                                  : "md:grid-cols-2 2xl:grid-cols-3"
+                            }`}
+                          >
+                            {round.matches.map((match) => (
+                              <div
+                                key={match.id}
+                                className="rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-5 transition hover:border-[var(--color-gold)]/20 hover:bg-white/8"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--color-mist)]">
+                                    {match.label}
+                                  </p>
+                                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-sand)]">
+                                    Fixture
+                                  </span>
+                                </div>
+                                <div className="mt-5 space-y-4">
+                                  <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3">
+                                    <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--color-mist)]">
+                                      Side A
+                                    </p>
+                                    <p className="mt-2 text-lg font-semibold leading-8 text-white">
+                                      {match.sideA}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center justify-center">
+                                    <span className="rounded-full border border-[var(--color-gold)]/20 bg-[var(--color-gold)]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-gold)]">
+                                      VS
+                                    </span>
+                                  </div>
+                                  <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3">
+                                    <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--color-mist)]">
+                                      Side B
+                                    </p>
+                                    <p className="mt-2 text-lg font-semibold leading-8 text-white">
+                                      {match.sideB}
+                                    </p>
+                                  </div>
+                                </div>
+                                {match.note ? (
+                                  <p className="mt-4 rounded-2xl border border-[var(--color-gold)]/12 bg-[var(--color-gold)]/8 px-3 py-2 text-sm leading-6 text-[var(--color-sand)]">
+                                    {match.note}
+                                  </p>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -835,67 +954,103 @@ export function DcmTournamentPlanner() {
                 type="button"
                 onClick={() => downloadCelebrationCard("winner")}
                 disabled={!winner}
-                className="rounded-full bg-[var(--color-gold)] px-5 py-3 font-semibold text-[var(--color-ink)] shadow-[0_12px_24px_rgba(226,185,107,0.18)] transition hover:bg-[var(--color-gold-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-full bg-[var(--color-gold)] px-5 py-3 font-semibold text-[var(--color-ink)] shadow-[0_12px_24px_rgba(226,185,107,0.18)] transition hover:bg-[var(--color-gold-soft)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Download winner card
+                Download winner image
               </button>
               <button
                 type="button"
                 onClick={() => downloadCelebrationCard("runner-up")}
                 disabled={!runnerUp}
-                className="rounded-full border border-white/15 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Download runner-up card
+                Download runner-up image
               </button>
             </div>
+            <p className="mt-4 text-sm leading-6 text-[var(--color-mist)]">
+              Downloads as a PNG image. On mobile, it will save through your browser or phone download flow so you can share it anywhere.
+            </p>
           </Card>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="board-glow premium-ring overflow-hidden rounded-[32px] bg-[linear-gradient(160deg,rgba(217,164,65,0.3),rgba(31,41,64,0.9),rgba(10,12,18,0.98))]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-gold)]">Winner Celebration</p>
-                  <p className="mt-4 font-display text-4xl text-white">{winner || "Select the winner"}</p>
-                  <p className="mt-3 text-sm text-[var(--color-sand)]">{tournamentName || "DCM Carrom Tournament"}</p>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <Card className="board-glow premium-ring relative overflow-hidden rounded-[32px] bg-[linear-gradient(145deg,rgba(217,164,65,0.24),rgba(31,41,64,0.9),rgba(10,12,18,0.99))] p-0">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,245,221,0.16),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(217,164,65,0.18),transparent_26%),radial-gradient(circle_at_50%_100%,rgba(200,107,68,0.14),transparent_28%)]" />
+              <div className="relative aspect-[4/5] p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="inline-flex rounded-full border border-[var(--color-gold)]/25 bg-[var(--color-gold)]/14 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--color-cream)]">
+                      Winner
+                    </p>
+                    <p className="mt-4 break-words font-display text-3xl text-white sm:text-4xl">
+                      {winner || "Select the winner"}
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--color-sand)]">
+                      {tournamentName || "DCM Carrom Tournament"}
+                    </p>
+                  </div>
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[18px] border border-[var(--color-gold)]/35 bg-[radial-gradient(circle_at_30%_30%,rgba(255,245,221,0.22),rgba(217,164,65,0.18),rgba(255,255,255,0.04))] text-center shadow-[0_18px_30px_rgba(217,164,65,0.16)] sm:h-16 sm:w-16">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[var(--color-cream)]">NO 1</span>
+                  </div>
                 </div>
-                <div className="grid h-16 w-16 place-items-center rounded-full border border-[var(--color-gold)]/35 bg-[radial-gradient(circle_at_30%_30%,rgba(255,245,221,0.18),rgba(217,164,65,0.16),rgba(255,255,255,0.05))] text-center shadow-[0_10px_20px_rgba(255,255,255,0.08)]">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--color-cream)]">
-                    DCM
-                  </span>
+                <div className="mt-6 flex h-[calc(100%-5.5rem)] flex-col rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-5 sm:p-6">
+                  <div className="grid flex-1 place-items-center text-center">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--color-gold)]">Champion Card</p>
+                      <p className="mt-4 font-display text-2xl text-white sm:text-3xl">Night of Champions</p>
+                      <p className="mt-4 break-words font-display text-4xl text-white sm:text-5xl">
+                        {winner || "Winner Name"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-[var(--color-mist)]">
+                      {tournamentMode === "singles" ? "Singles champion" : "Doubles champion"}
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-[var(--color-cream)]">
+                      {scoringMode === "best-of-3" ? "Best of 3" : "29 points"}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-8 rounded-[24px] border border-white/10 bg-white/8 p-4">
-                <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-cream)]">Champion Card</p>
-                <p className="mt-3 text-sm text-[var(--color-mist)]">
-                  {tournamentMode === "singles" ? "Singles champion" : "Doubles champion"} |{" "}
-                  {scoringMode === "best-of-3" ? "Best of 3" : "29 points"}
-                </p>
-                <p className="mt-4 text-sm leading-6 text-[var(--color-sand)]">
-                  Designed for celebration, sharing, and direct download after the tournament.
-                </p>
               </div>
             </Card>
-            <Card className="premium-ring overflow-hidden rounded-[32px] bg-[linear-gradient(160deg,rgba(73,180,171,0.18),rgba(79,51,95,0.34),rgba(10,12,18,0.98))]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-sand)]">Runner-up Celebration</p>
-                  <p className="mt-4 font-display text-4xl text-white">{runnerUp || "Select the runner-up"}</p>
-                  <p className="mt-3 text-sm text-[var(--color-mist)]">{tournamentName || "DCM Carrom Tournament"}</p>
+            <Card className="premium-ring relative overflow-hidden rounded-[32px] bg-[linear-gradient(145deg,rgba(199,206,221,0.14),rgba(143,115,72,0.16),rgba(31,41,64,0.92),rgba(10,12,18,0.99))] p-0">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,247,251,0.14),transparent_24%),radial-gradient(circle_at_82%_14%,rgba(199,206,221,0.16),transparent_24%),radial-gradient(circle_at_50%_100%,rgba(143,115,72,0.14),transparent_28%)]" />
+              <div className="relative aspect-[4/5] p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="inline-flex rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--color-cream)]">
+                      Runner-up
+                    </p>
+                    <p className="mt-4 break-words font-display text-3xl text-white sm:text-4xl">
+                      {runnerUp || "Select the runner-up"}
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--color-mist)]">
+                      {tournamentName || "DCM Carrom Tournament"}
+                    </p>
+                  </div>
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[18px] border border-white/10 bg-[radial-gradient(circle_at_30%_30%,rgba(245,247,251,0.18),rgba(199,206,221,0.12),rgba(255,255,255,0.05))] text-center shadow-[0_18px_30px_rgba(199,206,221,0.1)] sm:h-16 sm:w-16">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[var(--color-cream)]">FINAL</span>
+                  </div>
                 </div>
-                <div className="grid h-16 w-16 place-items-center rounded-full border border-white/10 bg-[radial-gradient(circle_at_30%_30%,rgba(240,246,255,0.16),rgba(73,180,171,0.14),rgba(255,255,255,0.05))] text-center shadow-[0_10px_20px_rgba(255,255,255,0.08)]">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-cream)]">
-                    PROUD
-                  </span>
+                <div className="mt-6 flex h-[calc(100%-5.5rem)] flex-col rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-5 sm:p-6">
+                  <div className="grid flex-1 place-items-center text-center">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--color-sand)]">Finalist Card</p>
+                      <p className="mt-4 font-display text-2xl text-white sm:text-3xl">A Brilliant Finish</p>
+                      <p className="mt-4 break-words font-display text-4xl text-white sm:text-5xl">
+                        {runnerUp || "Runner-up Name"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-[var(--color-mist)]">
+                      Proud finalist recognition
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-[var(--color-cream)]">
+                      {scoringMode === "best-of-3" ? "Best of 3" : "29 points"}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-8 rounded-[24px] border border-white/10 bg-white/8 p-4">
-                <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-cream)]">Celebration Card</p>
-                <p className="mt-3 text-sm text-[var(--color-mist)]">
-                  A polished runner-up card for sharing and recognition.
-                </p>
-                <p className="mt-4 text-sm leading-6 text-[var(--color-sand)]">
-                  Use the download button to save a ready-made card file instantly.
-                </p>
               </div>
             </Card>
           </div>
