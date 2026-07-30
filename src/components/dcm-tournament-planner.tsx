@@ -278,6 +278,7 @@ export function DcmTournamentPlanner() {
   const [winner, setWinner] = useState("");
   const [runnerUp, setRunnerUp] = useState("");
   const [lastDrawTime, setLastDrawTime] = useState("");
+  const [scheduleCopied, setScheduleCopied] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -389,6 +390,35 @@ export function DcmTournamentPlanner() {
     setRunnerUp("");
     setLastDrawTime("");
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(starterNames));
+  }
+
+  async function copyCompleteSchedule() {
+    if (!knockoutRounds.length) {
+      return;
+    }
+
+    const tournamentLabel = tournamentName || "DCM Carrom Tournament";
+    const modeLabel = tournamentMode === "singles" ? "Singles" : "Doubles";
+    const formatLabel = scoringMode === "best-of-3" ? "Best of 3" : "29 points";
+    const scheduleText = [
+      tournamentLabel,
+      `${modeLabel} | ${formatLabel}`,
+      "",
+      ...knockoutRounds.flatMap((round) => [
+        round.name,
+        ...round.matches.map((match) => `${match.label}: ${match.sideA} vs ${match.sideB}`),
+        ...round.matches
+          .filter((match) => match.note)
+          .map((match) => `Note: ${match.note}`),
+        ""
+      ])
+    ]
+      .join("\n")
+      .trim();
+
+    await navigator.clipboard.writeText(scheduleText);
+    setScheduleCopied(true);
+    window.setTimeout(() => setScheduleCopied(false), 2000);
   }
 
   async function downloadCelebrationCard(cardType: "winner" | "runner-up") {
@@ -637,7 +667,7 @@ export function DcmTournamentPlanner() {
           description="Choose singles or doubles, use best of 3 or 29 points, and randomize every tournament."
         />
         <div className="mt-8 grid gap-6 xl:grid-cols-[0.84fr_1.16fr]">
-          <Card className="carrom-surface premium-ring overflow-hidden rounded-[32px] xl:sticky xl:top-24 xl:h-fit">
+          <Card className="carrom-surface premium-ring overflow-hidden rounded-[32px]">
             <div className="lux-chip mb-5 inline-flex rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-gold)]">
               Setup Control
             </div>
@@ -751,30 +781,32 @@ export function DcmTournamentPlanner() {
 
           <div className="space-y-6">
             <Card className="carrom-surface premium-ring overflow-hidden rounded-[32px]">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <div className="lux-chip mb-4 inline-flex rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-gold)]">
+                  <div className="lux-chip mb-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium text-[var(--color-gold)]">
                     Draw Output
                   </div>
-                  <h3 className="font-display text-2xl text-white">
+                  <h3 className="font-display text-xl text-white sm:text-2xl">
                     {tournamentMode === "singles" ? "Singles list" : "Random doubles teams"}
                   </h3>
                 </div>
-                <Badge className="bg-white/6 text-[var(--color-sand)]">
+                <Badge className="bg-white/6 px-3 py-1 text-[11px] tracking-[0.14em] text-[var(--color-sand)]">
                   {drawTeams.length} {tournamentMode === "singles" ? "entries" : "teams"}
                 </Badge>
               </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {drawTeams.length ? (
                   drawTeams.map((team, index) => (
-                    <div key={team.id} className="rounded-[24px] border border-white/10 bg-white/5 p-4 transition hover:bg-white/8">
-                      <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-gold)]">
+                    <div
+                      key={team.id}
+                      className="rounded-[22px] border border-white/10 bg-white/5 px-4 py-3.5 transition hover:bg-white/8"
+                    >
+                      <p className="text-[11px] font-medium text-[var(--color-gold)]">
                         {tournamentMode === "singles" ? `Player ${index + 1}` : `Team ${index + 1}`}
                       </p>
-                      <p className="mt-3 text-lg font-semibold text-white">{team.label}</p>
-                      {tournamentMode === "doubles" ? (
-                        <p className="mt-2 text-sm text-[var(--color-mist)]">{team.members.join(" + ")}</p>
-                      ) : null}
+                      <p className="mt-2 text-base font-semibold leading-6 text-white sm:text-lg">
+                        {team.label}
+                      </p>
                     </div>
                   ))
                 ) : (
@@ -793,95 +825,63 @@ export function DcmTournamentPlanner() {
             <Card className="carrom-surface premium-ring overflow-hidden rounded-[32px]">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <div className="lux-chip mb-4 inline-flex rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-gold)]">
+                  <div className="lux-chip mb-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium text-[var(--color-gold)]">
                     Bracket Board
                   </div>
-                  <h3 className="font-display text-2xl text-white">Knockout schedule till final</h3>
+                  <h3 className="font-display text-xl text-white sm:text-2xl">Knockout schedule till final</h3>
                   <p className="mt-2 text-sm text-[var(--color-mist)]">
                     Byes are inserted automatically whenever the count is not a full bracket size.
                   </p>
                 </div>
-                <Badge className="bg-[var(--color-gold)]/12 text-[var(--color-cream)]">
-                  {knockoutRounds.length} rounds
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={copyCompleteSchedule}
+                    disabled={!knockoutRounds.length}
+                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {scheduleCopied ? "Copied" : "Copy schedule"}
+                  </button>
+                  <Badge className="bg-[var(--color-gold)]/12 px-3 py-1 text-[11px] tracking-[0.14em] text-[var(--color-cream)]">
+                    {knockoutRounds.length} rounds
+                  </Badge>
+                </div>
               </div>
               <div className="section-divider mt-6" />
-              <div className="mt-6 space-y-4">
+              <div className="mt-6">
                 {knockoutRounds.length ? (
-                  knockoutRounds.map((round) => (
-                    <div
-                      key={round.id}
-                      className="overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] shadow-[0_20px_44px_rgba(3,6,16,0.2)]"
-                    >
-                      <div className="grid gap-0 xl:grid-cols-[220px_1fr]">
-                        <div className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-5 xl:border-b-0 xl:border-r">
-                          <div className="flex items-center justify-between gap-3 xl:block">
+                  <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-3.5 shadow-[0_18px_38px_rgba(3,6,16,0.18)] sm:p-4">
+                    <div className="space-y-3">
+                      {knockoutRounds.map((round) => (
+                        <div
+                          key={round.id}
+                          className="rounded-[20px] border border-white/10 bg-white/5 p-3.5"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                              <p className="text-[11px] uppercase tracking-[0.34em] text-[var(--color-gold)]">
-                                {round.name}
-                              </p>
-                              <p className="mt-3 font-display text-2xl text-white">
-                                {round.matches.length === 1 ? "Direct clash" : "Match set"}
+                              <p className="text-[11px] font-medium text-[var(--color-gold)]">{round.name}</p>
+                              <p className="mt-1 text-[11px] text-[var(--color-mist)]">
+                                {round.matches.length} match{round.matches.length > 1 ? "es" : ""}
                               </p>
                             </div>
-                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-[var(--color-mist)]">
-                              {round.matches.length} match{round.matches.length > 1 ? "es" : ""}
-                            </span>
                           </div>
-                          <p className="mt-4 max-w-[16rem] text-sm leading-6 text-[var(--color-mist)]">
-                            {round.matches.length === 1
-                              ? "One deciding fixture in this stage."
-                              : "Every fixture for this stage grouped in one clean board."}
-                          </p>
-                        </div>
-                        <div className="p-4 sm:p-5">
-                          <div
-                            className={`grid gap-4 ${
-                              round.matches.length === 1
-                                ? "md:max-w-[360px]"
-                                : round.matches.length === 2
-                                  ? "md:grid-cols-2"
-                                  : "md:grid-cols-2 2xl:grid-cols-3"
-                            }`}
-                          >
+
+                          <div className="mt-3 space-y-2">
                             {round.matches.map((match) => (
                               <div
                                 key={match.id}
-                                className="rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-5 transition hover:border-[var(--color-gold)]/20 hover:bg-white/8"
+                                className="rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.04)] px-3 py-3"
                               >
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--color-mist)]">
-                                    {match.label}
+                                <p className="text-[10px] font-medium text-[var(--color-gold)]">{match.label}</p>
+                                <div className="mt-2 grid gap-2 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                                  <p className="text-sm font-semibold leading-5 text-white">{match.sideA}</p>
+                                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-mist)] md:text-center">
+                                    vs
                                   </p>
-                                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-sand)]">
-                                    Fixture
-                                  </span>
-                                </div>
-                                <div className="mt-5 space-y-4">
-                                  <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3">
-                                    <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--color-mist)]">
-                                      Side A
-                                    </p>
-                                    <p className="mt-2 text-lg font-semibold leading-8 text-white">
-                                      {match.sideA}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center justify-center">
-                                    <span className="rounded-full border border-[var(--color-gold)]/20 bg-[var(--color-gold)]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-gold)]">
-                                      VS
-                                    </span>
-                                  </div>
-                                  <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3">
-                                    <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--color-mist)]">
-                                      Side B
-                                    </p>
-                                    <p className="mt-2 text-lg font-semibold leading-8 text-white">
-                                      {match.sideB}
-                                    </p>
-                                  </div>
+                                  <p className="text-sm font-semibold leading-5 text-white">{match.sideB}</p>
                                 </div>
                                 {match.note ? (
-                                  <p className="mt-4 rounded-2xl border border-[var(--color-gold)]/12 bg-[var(--color-gold)]/8 px-3 py-2 text-sm leading-6 text-[var(--color-sand)]">
+                                  <p className="mt-2 text-[10px] leading-4 text-[var(--color-sand)]">
                                     {match.note}
                                   </p>
                                 ) : null}
@@ -889,9 +889,9 @@ export function DcmTournamentPlanner() {
                             ))}
                           </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))
+                  </div>
                 ) : (
                   <div className="rounded-[24px] border border-dashed border-white/15 p-6 text-sm text-[var(--color-mist)]">
                     Generate the matches and the full knockout schedule will appear here till the final.
